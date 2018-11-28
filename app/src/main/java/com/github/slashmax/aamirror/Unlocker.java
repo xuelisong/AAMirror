@@ -32,7 +32,7 @@ class Unlocker {
 //        builder.stopService("com.google.android.gms");
 //        builder.stopService("com.google.android.projection.gearhead");
 
-        return Shell.SU.run(builder.toList());
+        return Shell.run("su", builder.toArray(), null, true);
     }
 
     static Boolean isLocked() {
@@ -86,6 +86,10 @@ class Unlocker {
 
         List<String> toList() {
             return this.list;
+        }
+
+        String[] toArray() {
+            return this.toList().toArray(new String[0]);
         }
    }
 }
