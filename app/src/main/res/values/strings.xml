@@ -1,10 +1,12 @@
 <resources>
     <string name="app_name">Android Auto Mirror</string>
+    <string name="action_settings">Settings</string>
 
     <string name="pref_screen_settings">Screen settings</string>
     <string name="pref_navigation_settings">Sidebar settings</string>
     <string name="pref_audio_settings">Audio settings</string>
     <string name="pref_fav_settings">Favourite apps</string>
+    <string name="text_already_unlocked">Already unlocked. No need to unlock.</string>
 
     <string-array name="pref_orientation_list_titles">
         <item>None</item>
