@@ -21,16 +21,16 @@ class Unlocker {
                         "SELECT DISTINCT \"%s\", version, 0, 0, \"\", \"app_white_list\", \"%s\", 1 FROM Flags WHERE packageName = \"%s\"",
                 CAR_ROOT_PACKAGE, OUR_PACKAGE, CAR_PACKAGE);
 
-        builder.sql("DROP TRIGGER %s", TRIGGER_NAME);
-        builder.sql("CREATE TRIGGER %s AFTER DELETE ON Flags BEGIN %s END", TRIGGER_NAME, unlockSql);
+        builder.sql("DROP TRIGGER IF EXISTS %s", TRIGGER_NAME);
+        builder.sql("CREATE TRIGGER %s AFTER DELETE ON Flags BEGIN %s; END", TRIGGER_NAME, unlockSql);
 
         builder.sql("DELETE FROM Flags WHERE (name = \"app_black_list\" OR name = \"app_white_list\") AND packageName LIKE \"%s\"", CAR_PACKAGES_PATTERN);
         builder.sql("DELETE FROM FlagOverrides WHERE (name = \"app_black_list\" OR name = \"app_white_list\") AND packageName LIKE \"%s\"", CAR_PACKAGES_PATTERN);
 
         builder.sql(unlockSql);
 
-//        builder.stopService("com.google.android.gms");
-//        builder.stopService("com.google.android.projection.gearhead");
+        builder.stopService("com.google.android.gms");
+        builder.stopService("com.google.android.projection.gearhead");
 
         return Shell.run("su", builder.toArray(), null, true);
     }

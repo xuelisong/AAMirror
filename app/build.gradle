@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
-    project.archivesBaseName = "AAMirror"
+    project.archivesBaseName = "AAMirror-DezzK"
     defaultConfig {
         applicationId "com.github.slashmax.aamirror"
         minSdkVersion 21
