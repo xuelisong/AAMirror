@@ -43,6 +43,7 @@ import com.google.android.apps.auto.sdk.CarActivity;
 import com.google.android.apps.auto.sdk.CarUiController;
 import com.google.android.apps.auto.sdk.DayNightStyle;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import eu.chainfire.libsuperuser.Shell;
@@ -292,13 +293,12 @@ public class MainCarActivity extends CarActivity
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        super.onDestroy();
+        stopScreenCapture();
         m_DrawerListener.onDestroy();
         stopBrightnessService();
-        stopOrientationService();
         ResetScreenSize();
+        stopOrientationService();
         ResetImmersiveMode();
-        stopScreenCapture();
         m_MinitouchSocket.disconnect();
         if (m_HasRoot) {
             m_MinitouchDaemon.stop(m_MinitouchSocket.getPid());
@@ -309,6 +309,23 @@ public class MainCarActivity extends CarActivity
 
         if (m_Car.isConnected())
             m_Car.disconnect();
+        super.onDestroy();
+    }
+
+    private void restartMinitouchDaemon() {
+        if (m_MinitouchDaemon != null && m_MinitouchSocket != null) {
+            m_MinitouchSocket.disconnect();
+            if (m_HasRoot) {
+                m_MinitouchDaemon.stop(m_MinitouchSocket.getPid());
+                m_MinitouchTask.cancel(true);
+            }
+        }
+        m_MinitouchDaemon = new MinitouchDaemon(this);
+        m_MinitouchSocket = new MinitouchSocket();
+        m_MinitouchTask = new MinitouchAsyncTask();
+        if (m_HasRoot) {
+            m_MinitouchTask.execute();
+        }
     }
 
     @Override
@@ -381,8 +398,8 @@ public class MainCarActivity extends CarActivity
         super.onWindowFocusChanged(focus, b1);
 
         if (focus) {
-            startScreenCapture();
             SetScreenSize();
+            startScreenCapture();
         }
     }
 
@@ -881,13 +898,17 @@ public class MainCarActivity extends CarActivity
     public boolean onTouch(View v, MotionEvent event) {
         if (m_MinitouchSocket != null && event != null) {
             if (!m_MinitouchSocket.isConnected()) {
-                m_MinitouchSocket.connect(true);
+                if (!m_MinitouchSocket.connect(true)) {
+                    this.restartMinitouchDaemon();
+                    m_MinitouchSocket.connect(true);
+                }
                 UpdateTouchTransformations(true);
             } else {
                 UpdateTouchTransformations(false);
             }
 
             boolean ok = m_MinitouchSocket.isConnected();
+
             int action = event.getActionMasked();
             for (int i = 0; i < event.getPointerCount() && ok; i++) {
                 int id = event.getPointerId(i);

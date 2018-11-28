@@ -84,8 +84,8 @@ public class OrientationService extends Service
     public void onDestroy()
     {
         Log.d(TAG, "onDestroy");
-        super.onDestroy();
         Reset();
+        super.onDestroy();
     }
 
     @Nullable
