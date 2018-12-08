@@ -43,7 +43,6 @@ import com.google.android.apps.auto.sdk.CarActivity;
 import com.google.android.apps.auto.sdk.CarUiController;
 import com.google.android.apps.auto.sdk.DayNightStyle;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import eu.chainfire.libsuperuser.Shell;
@@ -75,61 +74,61 @@ public class MainCarActivity extends CarActivity
         implements Handler.Callback,
         View.OnTouchListener, TwoFingerGestureDetector.OnTwoFingerGestureListener,
         AppsGridFragment.OnAppClickListener, AppsGridFragment.OnAppLongClickListener {
-    private static final String         TAG = "MainCarActivity";
+    private static final String TAG = "MainCarActivity";
 
-    private static final int            REQUEST_MEDIA_PROJECTION_PERMISSION = 1;
+    private static final int REQUEST_MEDIA_PROJECTION_PERMISSION = 1;
 
-    private static final int            ACTION_APP_LAUNCH   = 0;
-    private static final int            ACTION_APP_FAV_1    = 1;
-    private static final int            ACTION_APP_FAV_2    = 2;
-    private static final int            ACTION_APP_FAV_3    = 3;
-    private static final int            ACTION_APP_FAV_4    = 4;
-    private static final int            ACTION_APP_FAV_5    = 5;
+    private static final int ACTION_APP_LAUNCH = 0;
+    private static final int ACTION_APP_FAV_1 = 1;
+    private static final int ACTION_APP_FAV_2 = 2;
+    private static final int ACTION_APP_FAV_3 = 3;
+    private static final int ACTION_APP_FAV_4 = 4;
+    private static final int ACTION_APP_FAV_5 = 5;
 
-    private String                      m_AppFav1;
-    private String                      m_AppFav2;
-    private String                      m_AppFav3;
-    private String                      m_AppFav4;
-    private String                      m_AppFav5;
+    private String m_AppFav1;
+    private String m_AppFav2;
+    private String m_AppFav3;
+    private String m_AppFav4;
+    private String m_AppFav5;
 
-    private Car                         m_Car;
+    private Car m_Car;
 
-    private int                         m_AppsAction;
+    private int m_AppsAction;
 
-    private boolean                     m_ScreenResized;
-    private boolean                     m_HasRoot;
-    private MinitouchDaemon             m_MinitouchDaemon;
-    private MinitouchSocket             m_MinitouchSocket;
-    private MinitouchAsyncTask          m_MinitouchTask;
+    private boolean m_ScreenResized;
+    private boolean m_HasRoot;
+    private MinitouchDaemon m_MinitouchDaemon;
+    private MinitouchSocket m_MinitouchSocket;
+    private MinitouchAsyncTask m_MinitouchTask;
 
-    private ShellDirectExecutor         m_ShellExecutor;
-    private static Shell.Interactive    m_Shell;
+    private ShellDirectExecutor m_ShellExecutor;
+    private static Shell.Interactive m_Shell;
 
-    private UnlockReceiver              m_UnlockReceiver;
-    private Handler                     m_RequestHandler;
-    private PowerManager.WakeLock       m_WakeLock;
+    private UnlockReceiver m_UnlockReceiver;
+    private Handler m_RequestHandler;
+    private PowerManager.WakeLock m_WakeLock;
 
-    private DrawerLayout                m_DrawerLayout;
-    private LinearLayout                m_TaskBarDrawer;
-    private LinearLayout                m_AppsDrawer;
-    private SurfaceView                 m_SurfaceView;
-    private Surface                     m_Surface;
+    private DrawerLayout m_DrawerLayout;
+    private LinearLayout m_TaskBarDrawer;
+    private LinearLayout m_AppsDrawer;
+    private SurfaceView m_SurfaceView;
+    private Surface m_Surface;
 
-    private SurfaceDrawerListener       m_DrawerListener;
-    private TwoFingerGestureDetector    m_TwoFingerDetector;
+    private SurfaceDrawerListener m_DrawerListener;
+    private TwoFingerGestureDetector m_TwoFingerDetector;
 
-    private VirtualDisplay              m_VirtualDisplay;
-    private MediaProjection             m_MediaProjection;
-    private int                         m_ProjectionCode;
-    private Intent                      m_ProjectionIntent;
+    private VirtualDisplay m_VirtualDisplay;
+    private MediaProjection m_MediaProjection;
+    private int m_ProjectionCode;
+    private Intent m_ProjectionIntent;
 
-    private int                         m_ScreenRotation;
-    private int                         m_ScreenWidth;
-    private int                         m_ScreenHeight;
-    private double                      m_ProjectionOffsetX;
-    private double                      m_ProjectionOffsetY;
-    private double                      m_ProjectionWidth;
-    private double                      m_ProjectionHeight;
+    private int m_ScreenRotation;
+    private int m_ScreenWidth;
+    private int m_ScreenHeight;
+    private double m_ProjectionOffsetX;
+    private double m_ProjectionOffsetY;
+    private double m_ProjectionWidth;
+    private double m_ProjectionHeight;
 
     private class MinitouchAsyncTask extends AsyncTask<Void, Void, Void> {
         @Override
@@ -150,8 +149,9 @@ public class MainCarActivity extends CarActivity
         @Override
         protected Void doInBackground(String... params) {
             Log.d(TAG, "doInBackground");
-            if (m_Shell != null)
+            if (m_Shell != null) {
                 m_Shell.addCommand(params[0]);
+            }
             return null;
         }
     }
@@ -161,12 +161,13 @@ public class MainCarActivity extends CarActivity
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "UnlockReceiver.onReceive: " + (intent != null ? intent.toString() : "null"));
             if (intent != null && intent.getAction() != null) {
-                if (intent.getAction().equals(ACTION_USER_PRESENT))
+                if (intent.getAction().equals(ACTION_USER_PRESENT)) {
                     OnUnlock();
-                else if (intent.getAction().equals(ACTION_SCREEN_ON))
+                } else if (intent.getAction().equals(ACTION_SCREEN_ON)) {
                     OnScreenOn();
-                else if (intent.getAction().equals(ACTION_SCREEN_OFF))
+                } else if (intent.getAction().equals(ACTION_SCREEN_OFF)) {
                     OnScreenOff();
+                }
             }
         }
     }
@@ -176,8 +177,9 @@ public class MainCarActivity extends CarActivity
 
         SurfaceDrawerListener(DrawerLayout drawerLayout) {
             m_Drawer = drawerLayout;
-            if (m_Drawer != null)
+            if (m_Drawer != null) {
                 m_Drawer.addDrawerListener(this);
+            }
         }
 
         void onDestroy() {
@@ -190,32 +192,36 @@ public class MainCarActivity extends CarActivity
         @Override
         public void onDrawerSlide(View drawerView, float slideOffset) {
             super.onDrawerSlide(drawerView, slideOffset);
-            if (m_Drawer != null)
+            if (m_Drawer != null) {
                 m_Drawer.bringChildToFront(drawerView);
+            }
         }
 
         @Override
         public void onDrawerOpened(View drawerView) {
             Log.d(TAG, "onDrawerOpened");
             super.onDrawerOpened(drawerView);
-            if (m_Drawer != null)
+            if (m_Drawer != null) {
                 m_Drawer.bringChildToFront(drawerView);
+            }
         }
 
         @Override
         public void onDrawerClosed(View drawerView) {
             Log.d(TAG, "onDrawerClosed");
             super.onDrawerClosed(drawerView);
-            if (drawerView == m_AppsDrawer)
+            if (drawerView == m_AppsDrawer) {
                 m_AppsAction = ACTION_APP_LAUNCH;
+            }
         }
     }
 
     @Override
     public void onTwoFingerTapUp() {
         Log.d(TAG, "onTwoFingerTapUp");
-        if (getDefaultSharedPreferences("open_left_drawer_on_two_finger_tap", true))
+        if (getDefaultSharedPreferences("open_left_drawer_on_two_finger_tap", true)) {
             m_DrawerLayout.openDrawer(m_TaskBarDrawer);
+        }
     }
 
     @Override
@@ -239,8 +245,9 @@ public class MainCarActivity extends CarActivity
         m_RequestHandler = new Handler(this);
 
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (powerManager != null)
+        if (powerManager != null) {
             m_WakeLock = powerManager.newWakeLock(SCREEN_DIM_WAKE_LOCK | ACQUIRE_CAUSES_WAKEUP, "AAMirrorWakeLock");
+        }
 
         m_DrawerLayout = (DrawerLayout) findViewById(R.id.m_DrawerLayout);
         m_TaskBarDrawer = (LinearLayout) findViewById(R.id.m_TaskBarDrawer);
@@ -304,11 +311,13 @@ public class MainCarActivity extends CarActivity
             m_MinitouchDaemon.stop(m_MinitouchSocket.getPid());
             m_MinitouchTask.cancel(true);
         }
-        if (m_Shell != null)
+        if (m_Shell != null) {
             m_Shell.close();
+        }
 
-        if (m_Car.isConnected())
+        if (m_Car.isConnected()) {
             m_Car.disconnect();
+        }
         super.onDestroy();
     }
 
@@ -346,8 +355,9 @@ public class MainCarActivity extends CarActivity
         Log.d(TAG, "onStart");
         super.onStart();
         CarApplication.EnableOrientationListener();
-        if (m_WakeLock != null)
+        if (m_WakeLock != null) {
             m_WakeLock.acquire();
+        }
 
         OnScreenOn();
         IntentFilter filter = new IntentFilter();
@@ -356,10 +366,11 @@ public class MainCarActivity extends CarActivity
         filter.addAction(ACTION_SCREEN_OFF);
         registerReceiver(m_UnlockReceiver, filter);
 
-        if (getDefaultSharedPreferences("disable_drawer_swipe", false))
+        if (getDefaultSharedPreferences("disable_drawer_swipe", false)) {
             m_DrawerLayout.setDrawerLockMode(LOCK_MODE_LOCKED_CLOSED);
-        else
+        } else {
             m_DrawerLayout.setDrawerLockMode(LOCK_MODE_UNLOCKED);
+        }
     }
 
     @Override
@@ -367,8 +378,9 @@ public class MainCarActivity extends CarActivity
         Log.d(TAG, "onStop");
         super.onStop();
         CarApplication.DisableOrientationListener();
-        if (m_WakeLock != null && m_WakeLock.isHeld())
+        if (m_WakeLock != null && m_WakeLock.isHeld()) {
             m_WakeLock.release(ON_AFTER_RELEASE);
+        }
 
         OnScreenOff();
         unregisterReceiver(m_UnlockReceiver);
@@ -423,25 +435,29 @@ public class MainCarActivity extends CarActivity
 
     @ColorInt
     private int getColorCompat(@ColorRes int id) {
-        if (Build.VERSION.SDK_INT >= 23)
+        if (Build.VERSION.SDK_INT >= 23) {
             return getColor(id);
-        else
+        } else {
             return getResources().getColor(id);
+        }
     }
 
     private void UpdateConfiguration(Configuration configuration) {
-        if (configuration == null)
+        if (configuration == null) {
             return;
+        }
 
         Log.d(TAG, "UpdateConfiguration: " + configuration.toString());
         int backgroundColor;
-        if ((configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES)
+        if ((configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
             backgroundColor = getColorCompat(R.color.colorCarBackgroundNight);
-        else
+        } else {
             backgroundColor = getColorCompat(R.color.colorCarBackgroundDay);
+        }
 
-        if (m_TaskBarDrawer != null)
+        if (m_TaskBarDrawer != null) {
             m_TaskBarDrawer.setBackgroundColor(backgroundColor);
+        }
     }
 
     private void OnUnlock() {
@@ -451,26 +467,30 @@ public class MainCarActivity extends CarActivity
         startOrientationService();
         SetScreenSize();
         SetImmersiveMode();
-        if (getDefaultSharedPreferences("open_left_drawer_on_start", false))
+        if (getDefaultSharedPreferences("open_left_drawer_on_start", false)) {
             m_DrawerLayout.openDrawer(m_TaskBarDrawer);
+        }
     }
 
     private void OnScreenOn() {
         Log.d(TAG, "OnScreenOn");
         m_SurfaceView.setKeepScreenOn(true);
         startScreenCapture();
-        if (!IsLocked())
+        if (!IsLocked()) {
             OnUnlock();
+        }
     }
 
     private void OnScreenOff() {
         Log.d(TAG, "OnScreenOff");
         m_SurfaceView.setKeepScreenOn(false);
         stopBrightnessService();
-        if (getDefaultSharedPreferences("reset_screen_rotation_on_stop", true))
+        if (getDefaultSharedPreferences("reset_screen_rotation_on_stop", true)) {
             stopOrientationService();
-        if (getDefaultSharedPreferences("reset_screen_size_on_stop", true))
+        }
+        if (getDefaultSharedPreferences("reset_screen_size_on_stop", true)) {
             ResetScreenSize();
+        }
         ResetImmersiveMode();
         stopScreenCapture();
     }
@@ -514,7 +534,9 @@ public class MainCarActivity extends CarActivity
 
         ImageView m_Back = (ImageView) findViewById(R.id.m_Back);
         if (m_Back != null) {
-            if (!m_HasRoot) m_Back.setVisibility(View.GONE);
+            if (!m_HasRoot) {
+                m_Back.setVisibility(View.GONE);
+            }
 
             m_Back.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -535,7 +557,9 @@ public class MainCarActivity extends CarActivity
 
         ImageView m_Menu = (ImageView) findViewById(R.id.m_Menu);
         if (m_Menu != null) {
-            if (!m_HasRoot) m_Menu.setVisibility(View.GONE);
+            if (!m_HasRoot) {
+                m_Menu.setVisibility(View.GONE);
+            }
 
             m_Menu.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -560,10 +584,11 @@ public class MainCarActivity extends CarActivity
                 @Override
                 public void onClick(View v) {
                     Log.d(TAG, "m_Apps.onClick");
-                    if (m_DrawerLayout.isDrawerOpen(m_AppsDrawer))
+                    if (m_DrawerLayout.isDrawerOpen(m_AppsDrawer)) {
                         m_DrawerLayout.closeDrawer(m_AppsDrawer);
-                    else
+                    } else {
                         OpenAppsDrawer(ACTION_APP_LAUNCH);
+                    }
                 }
             });
             m_Apps.setOnLongClickListener(new View.OnLongClickListener() {
@@ -691,8 +716,9 @@ public class MainCarActivity extends CarActivity
     private void LaunchActivity(String packageName) {
         Log.d(TAG, "LaunchActivity");
         Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-        if (intent != null)
+        if (intent != null) {
             startActivity(intent);
+        }
         m_DrawerLayout.closeDrawers();
     }
 
@@ -718,10 +744,11 @@ public class MainCarActivity extends CarActivity
                 break;
         }
 
-        if (longPress || packageName == null || packageName.isEmpty())
+        if (longPress || packageName == null || packageName.isEmpty()) {
             OpenAppsDrawer(action);
-        else
+        } else {
             LaunchActivity(packageName);
+        }
     }
 
     private void UpdateFavApp(int action, String packageName) {
@@ -729,8 +756,9 @@ public class MainCarActivity extends CarActivity
 
         Drawable icon = getDrawable(R.drawable.ic_star_black);
         try {
-            if (packageName != null && !packageName.isEmpty())
+            if (packageName != null && !packageName.isEmpty()) {
                 icon = getPackageManager().getApplicationIcon(packageName);
+            }
 
         } catch (Exception e) {
             Log.d(TAG, "UpdateFavApp exception: " + e.toString());
@@ -740,27 +768,37 @@ public class MainCarActivity extends CarActivity
             case ACTION_APP_FAV_1:
                 m_AppFav1 = packageName;
                 ImageView favImage1 = (ImageView) findViewById(R.id.m_Fav1);
-                if (favImage1 != null) favImage1.setImageDrawable(icon);
+                if (favImage1 != null) {
+                    favImage1.setImageDrawable(icon);
+                }
                 break;
             case ACTION_APP_FAV_2:
                 m_AppFav2 = packageName;
                 ImageView favImage2 = (ImageView) findViewById(R.id.m_Fav2);
-                if (favImage2 != null) favImage2.setImageDrawable(icon);
+                if (favImage2 != null) {
+                    favImage2.setImageDrawable(icon);
+                }
                 break;
             case ACTION_APP_FAV_3:
                 m_AppFav3 = packageName;
                 ImageView favImage3 = (ImageView) findViewById(R.id.m_Fav3);
-                if (favImage3 != null) favImage3.setImageDrawable(icon);
+                if (favImage3 != null) {
+                    favImage3.setImageDrawable(icon);
+                }
                 break;
             case ACTION_APP_FAV_4:
                 m_AppFav4 = packageName;
                 ImageView favImage4 = (ImageView) findViewById(R.id.m_Fav4);
-                if (favImage4 != null) favImage4.setImageDrawable(icon);
+                if (favImage4 != null) {
+                    favImage4.setImageDrawable(icon);
+                }
                 break;
             case ACTION_APP_FAV_5:
                 m_AppFav5 = packageName;
                 ImageView favImage5 = (ImageView) findViewById(R.id.m_Fav5);
-                if (favImage5 != null) favImage5.setImageDrawable(icon);
+                if (favImage5 != null) {
+                    favImage5.setImageDrawable(icon);
+                }
                 break;
         }
     }
@@ -782,13 +820,11 @@ public class MainCarActivity extends CarActivity
 
         double c_width = m_SurfaceView.getWidth();
         double c_height = m_SurfaceView.getHeight();
-        if (do_it && !IsLocked() && c_width > 0 && c_height > 0)
-        {
+        if (do_it && !IsLocked() && c_width > 0 && c_height > 0) {
             double ratio = c_width / c_height;
             double s_width = CarApplication.DisplaySize.x;
-            if (s_width > 0)
-            {
-                SetScreenSize((int)s_width, (int)(s_width * ratio));
+            if (s_width > 0) {
+                SetScreenSize((int) s_width, (int) (s_width * ratio));
             }
         }
     }
@@ -808,12 +844,13 @@ public class MainCarActivity extends CarActivity
 
     private void SetImmersiveMode() {
         String immersiveMode = getDefaultSharedPreferences("immersive_mode", "");
-        if (immersiveMode.contains("immersive"))
+        if (immersiveMode.contains("immersive")) {
             shellExec("settings put global policy_control " + immersiveMode);
+        }
     }
 
     private void ResetImmersiveMode() {
-        shellExec( "settings put global policy_control none*");
+        shellExec("settings put global policy_control none*");
     }
 
     private void startScreenCapture() {
@@ -826,8 +863,9 @@ public class MainCarActivity extends CarActivity
         int ScreenDensity = metrics.densityDpi;
 
         MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        if (mediaProjectionManager != null)
+        if (mediaProjectionManager != null) {
             m_MediaProjection = mediaProjectionManager.getMediaProjection(m_ProjectionCode, m_ProjectionIntent);
+        }
 
         if (m_MediaProjection != null && m_SurfaceView != null) {
             int c_width = m_SurfaceView.getWidth();
@@ -862,11 +900,13 @@ public class MainCarActivity extends CarActivity
     private void UpdateTouchTransformations(boolean force) {
         if ((CarApplication.ScreenRotation == m_ScreenRotation) &&
                 CarApplication.ScreenSize.equals(m_ScreenWidth, m_ScreenHeight) &&
-                !force)
+                !force) {
             return;
+        }
 
-        if (m_SurfaceView == null)
+        if (m_SurfaceView == null) {
             return;
+        }
 
         m_ScreenRotation = CarApplication.ScreenRotation;
         m_ScreenWidth = CarApplication.ScreenSize.x;
@@ -888,10 +928,11 @@ public class MainCarActivity extends CarActivity
         m_ProjectionOffsetX = (SurfaceWidth - m_ProjectionWidth) / 2.0;
         m_ProjectionOffsetY = (SurfaceHeight - m_ProjectionHeight) / 2.0;
 
-        if (m_ScreenRotation == ROTATION_0 || m_ScreenRotation == ROTATION_180)
+        if (m_ScreenRotation == ROTATION_0 || m_ScreenRotation == ROTATION_180) {
             m_MinitouchSocket.UpdateTouchTransformations(m_ScreenWidth, m_ScreenHeight, CarApplication.DisplaySize);
-        else
+        } else {
             m_MinitouchSocket.UpdateTouchTransformations(m_ScreenHeight, m_ScreenWidth, CarApplication.DisplaySize);
+        }
     }
 
     @Override
@@ -958,7 +999,9 @@ public class MainCarActivity extends CarActivity
                 }
             }
 
-            if (ok) m_MinitouchSocket.TouchCommit();
+            if (ok) {
+                m_MinitouchSocket.TouchCommit();
+            }
         }
 
         m_TwoFingerDetector.onTouchEvent(event);
@@ -990,8 +1033,9 @@ public class MainCarActivity extends CarActivity
     private void RequestProjectionPermission() {
         Log.d(TAG, "RequestProjectionPermission");
         MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        if (mediaProjectionManager != null)
+        if (mediaProjectionManager != null) {
             startActivityForResult(REQUEST_MEDIA_PROJECTION_PERMISSION, mediaProjectionManager.createScreenCaptureIntent());
+        }
     }
 
     private void startActivity(String action) {
@@ -1003,19 +1047,22 @@ public class MainCarActivity extends CarActivity
 
     private void RequestWriteSettingsPermission() {
         Log.d(TAG, "RequestWriteSettingsPermission");
-        if (Build.VERSION.SDK_INT >= 23 && !Settings.System.canWrite(this))
+        if (Build.VERSION.SDK_INT >= 23 && !Settings.System.canWrite(this)) {
             startActivity(ACTION_MANAGE_WRITE_SETTINGS);
+        }
     }
 
     private void RequestOverlayPermission() {
         Log.d(TAG, "RequestOverlayPermission");
-        if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this))
+        if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this)) {
             startActivity(ACTION_MANAGE_OVERLAY_PERMISSION);
+        }
     }
 
     private void RequestAudioFocus() {
-        if (!getDefaultSharedPreferences("request_audio_focus_on_connect", false))
+        if (!getDefaultSharedPreferences("request_audio_focus_on_connect", false)) {
             return;
+        }
 
         Log.d(TAG, "RequestAudioFocus");
         try {

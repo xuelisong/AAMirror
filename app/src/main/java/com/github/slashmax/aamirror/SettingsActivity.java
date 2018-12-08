@@ -14,38 +14,30 @@ import android.view.MenuItem;
 
 import java.util.List;
 
-public class SettingsActivity extends AppCompatPreferenceActivity
-{
-    private static final String     TAG = "SettingsActivity";
+public class SettingsActivity extends AppCompatPreferenceActivity {
+    private static final String TAG = "SettingsActivity";
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener()
-    {
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value)
-        {
+        public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
 
-            if (preference instanceof ListPreference)
-            {
+            if (preference instanceof ListPreference) {
                 ListPreference listPreference = (ListPreference) preference;
                 int index = listPreference.findIndexOfValue(stringValue);
                 preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
-            }
-            else if (preference instanceof EditTextPreference)
-            {
+            } else if (preference instanceof EditTextPreference) {
                 preference.setSummary(stringValue);
             }
             return true;
         }
     };
 
-    public static class ScreenPreferenceFragment extends PreferenceFragment
-    {
+    public static class ScreenPreferenceFragment extends PreferenceFragment {
 
         @Override
-        public void onCreate(@Nullable Bundle savedInstanceState)
-        {
+        public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_screen_settings);
             setHasOptionsMenu(true);
@@ -57,11 +49,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         }
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item)
-        {
+        public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
-            if (id == android.R.id.home)
-            {
+            if (id == android.R.id.home) {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             }
@@ -69,23 +59,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         }
     }
 
-    public static class NavigationPreferenceFragment extends PreferenceFragment
-    {
+    public static class NavigationPreferenceFragment extends PreferenceFragment {
 
         @Override
-        public void onCreate(@Nullable Bundle savedInstanceState)
-        {
+        public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_navigation_settings);
             setHasOptionsMenu(true);
         }
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item)
-        {
+        public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
-            if (id == android.R.id.home)
-            {
+            if (id == android.R.id.home) {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             }
@@ -93,23 +79,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         }
     }
 
-    public static class AudioPreferenceFragment extends PreferenceFragment
-    {
+    public static class AudioPreferenceFragment extends PreferenceFragment {
 
         @Override
-        public void onCreate(@Nullable Bundle savedInstanceState)
-        {
+        public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_audio_settings);
             setHasOptionsMenu(true);
         }
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item)
-        {
+        public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
-            if (id == android.R.id.home)
-            {
+            if (id == android.R.id.home) {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             }
@@ -117,23 +99,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         }
     }
 
-    public static class FavouritesPreferenceFragment extends PreferenceFragment
-    {
+    public static class FavouritesPreferenceFragment extends PreferenceFragment {
 
         @Override
-        public void onCreate(@Nullable Bundle savedInstanceState)
-        {
+        public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_fav_settings);
             setHasOptionsMenu(true);
         }
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item)
-        {
+        public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
-            if (id == android.R.id.home)
-            {
+            if (id == android.R.id.home) {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             }
@@ -142,32 +120,29 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState)
-    {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null)
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
-    public void onBuildHeaders(List<Header> target)
-    {
+    public void onBuildHeaders(List<Header> target) {
         Log.d(TAG, "onBuildHeaders");
         super.onBuildHeaders(target);
         loadHeadersFromResource(R.xml.pref_headers, target);
     }
 
     @Override
-    protected boolean isValidFragment(String fragmentName)
-    {
+    protected boolean isValidFragment(String fragmentName) {
         return true;
     }
 
-    private static void bindPreferenceSummaryToValue(Preference preference)
-    {
+    private static void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
         sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,

@@ -11,33 +11,29 @@ import android.util.Log;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 
-public class BrightnessService extends Service
-{
+public class BrightnessService extends Service {
     private static final String TAG = "BrightnessService";
 
-    public static final String BRIGHTNESS       = "Brightness";
-    public static final String BRIGHTNESS_MODE  = "BrightnessMode";
+    public static final String BRIGHTNESS = "Brightness";
+    public static final String BRIGHTNESS_MODE = "BrightnessMode";
 
-    public static final int SCREEN_BRIGHTNESS_MODE_MANUAL       = Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-    public static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC    = Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+    public static final int SCREEN_BRIGHTNESS_MODE_MANUAL = Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
+    public static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 
     private int m_Brightness;
     private int m_BrightnessMode;
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
         Log.d(TAG, "onCreate");
         super.onCreate();
         ReadBrightnessSettings();
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
-    {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
-        if (intent != null)
-        {
+        if (intent != null) {
             int brightness = intent.getIntExtra(BRIGHTNESS, 255);
             int brightnessMode = intent.getIntExtra(BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
             WriteBrightnessSettings(brightness, brightnessMode);
@@ -46,8 +42,7 @@ public class BrightnessService extends Service
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
         WriteBrightnessSettings(m_Brightness, m_BrightnessMode);
@@ -55,54 +50,47 @@ public class BrightnessService extends Service
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent)
-    {
+    public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
         return null;
     }
 
     @Override
-    public boolean onUnbind(Intent intent)
-    {
+    public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind");
         return super.onUnbind(intent);
     }
 
     @Override
-    public void onRebind(Intent intent)
-    {
+    public void onRebind(Intent intent) {
         Log.d(TAG, "onRebind");
         super.onRebind(intent);
     }
 
-    private boolean CanWriteSettings()
-    {
+    private boolean CanWriteSettings() {
         Log.d(TAG, "CanWriteSettings");
         return Build.VERSION.SDK_INT < 23 ||
                 Settings.System.canWrite(this);
     }
 
-    private void ReadBrightnessSettings()
-    {
+    private void ReadBrightnessSettings() {
         Log.d(TAG, "ReadBrightnessSettings");
-        try
-        {
+        try {
             m_Brightness = Settings.System.getInt(getContentResolver(), SCREEN_BRIGHTNESS);
             m_BrightnessMode = Settings.System.getInt(getContentResolver(), SCREEN_BRIGHTNESS_MODE);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.d(TAG, "ReadBrightnessSettings exception: " + e.toString());
         }
     }
 
-    private void WriteBrightnessSettings(int brightness, int brightnessMode)
-    {
+    private void WriteBrightnessSettings(int brightness, int brightnessMode) {
         Log.d(TAG, "WriteBrightnessSettings");
-        if (CanWriteSettings())
-        {
-            if (brightness < 0) brightness = 0;
-            else if (brightness > 255) brightness = 255;
+        if (CanWriteSettings()) {
+            if (brightness < 0) {
+                brightness = 0;
+            } else if (brightness > 255) {
+                brightness = 255;
+            }
             Settings.System.putInt(getContentResolver(), SCREEN_BRIGHTNESS, brightness);
             Settings.System.putInt(getContentResolver(), SCREEN_BRIGHTNESS_MODE, brightnessMode);
         }

@@ -8,18 +8,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-public class ResultRequestActivity extends Activity
-{
+public class ResultRequestActivity extends Activity {
     private static final String TAG = "ResultRequestActivity";
 
-    private static Handler  ResultHandler;
-    private static int      RequestWhat;
-    private static Intent   RequestIntent;
-    private static int      RequestCode;
+    private static Handler ResultHandler;
+    private static int RequestWhat;
+    private static Intent RequestIntent;
+    private static int RequestCode;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_request);
@@ -27,42 +25,38 @@ public class ResultRequestActivity extends Activity
     }
 
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
-        if (ResultHandler != null)
-        {
+        if (ResultHandler != null) {
             Message msg = Message.obtain(ResultHandler, RequestWhat, requestCode, resultCode, data);
             msg.sendToTarget();
         }
         finish();
     }
 
-    private void startActivityForResult()
-    {
+    private void startActivityForResult() {
         Log.d(TAG, "startActivityForResult");
-        if (ResultHandler != null && RequestIntent != null)
+        if (ResultHandler != null && RequestIntent != null) {
             startActivityForResult(RequestIntent, RequestCode);
-        else
+        } else {
             finish();
+        }
     }
 
-    public static void startActivityForResult(Context context, Handler handler, int what, Intent intent, int requestCod)
-    {
+    public static void startActivityForResult(Context context, Handler handler, int what, Intent intent, int requestCod) {
         Log.d(TAG, "startActivityForResult");
 
-        ResultHandler   = handler;
-        RequestWhat     = what;
-        RequestIntent   = intent;
-        RequestCode     = requestCod;
+        ResultHandler = handler;
+        RequestWhat = what;
+        RequestIntent = intent;
+        RequestCode = requestCod;
 
         Intent this_intent = new Intent(context, ResultRequestActivity.class);
         this_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
