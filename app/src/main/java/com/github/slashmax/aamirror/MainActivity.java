@@ -1,22 +1,14 @@
 package com.github.slashmax.aamirror;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
@@ -63,8 +55,13 @@ public class MainActivity extends AppCompatActivity {
     private void unlock() {
         TextView operationLog = findViewById(R.id.operationLog);
 
+        if (!Shell.SU.available()) {
+            operationLog.setText(R.string.no_root_detected);
+            return;
+        }
+
         if (!Unlocker.isLocked()) {
-            operationLog.setText(R.string.text_already_unlocked);
+            operationLog.setText(R.string.already_unlocked);
             return;
         }
 
