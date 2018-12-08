@@ -8,7 +8,7 @@ import eu.chainfire.libsuperuser.Shell;
 class Unlocker {
     private static final String OUR_PACKAGE = Unlocker.class.getPackage().getName();
     private static final String CAR_ROOT_PACKAGE = "com.google.android.gms.car";
-    private static final String CAR_PACKAGE = CAR_ROOT_PACKAGE + "#car";
+    //    private static final String CAR_PACKAGE = CAR_ROOT_PACKAGE + "#car";
     private static final String CAR_PACKAGES_PATTERN = CAR_ROOT_PACKAGE + "%";
     private static final String TRIGGER_NAME = "after_delete_mirror";
 
@@ -18,8 +18,8 @@ class Unlocker {
 //        builder.disableGmsComponent("chimera.PersistentDirectBootAwareApiService");
 
         String unlockSql = String.format("INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, user, name, stringVal, committed) " +
-                        "SELECT DISTINCT \"%s\", version, 0, 0, \"\", \"app_white_list\", \"%s\", 1 FROM Flags WHERE packageName = \"%s\"",
-                CAR_ROOT_PACKAGE, OUR_PACKAGE, CAR_PACKAGE);
+                        "SELECT DISTINCT \"%s\", version, 0, 0, \"\", \"app_white_list\", \"%s\", 1 FROM Flags WHERE packageName LIKE \"%s\"",
+                CAR_ROOT_PACKAGE, OUR_PACKAGE, CAR_PACKAGES_PATTERN);
 
         builder.sql("DROP TRIGGER IF EXISTS %s", TRIGGER_NAME);
         builder.sql("CREATE TRIGGER %s AFTER DELETE ON Flags BEGIN %s; END", TRIGGER_NAME, unlockSql);
@@ -37,7 +37,7 @@ class Unlocker {
 
     static Boolean isLocked() {
         CommandBuilder builder = new CommandBuilder();
-        builder.sql("SELECT COUNT(DISTINCT version) FROM Flags WHERE packageName = \"%s\"", CAR_PACKAGE);
+        builder.sql("SELECT COUNT(DISTINCT version) FROM Flags WHERE packageName LIKE \"%s\"", CAR_PACKAGES_PATTERN);
         builder.sql("SELECT result FROM (SELECT DISTINCT version, CASE WHEN name = \"app_white_list\" THEN 1 ELSE 0 END AS result FROM Flags WHERE (name = \"app_black_list\" OR name = \"app_white_list\") AND stringVal LIKE \"%%%s%%\" AND packageName = \"%s\") AS t", OUR_PACKAGE, CAR_ROOT_PACKAGE);
 
         List<String> results = Shell.SU.run(builder.toList());
@@ -68,12 +68,20 @@ class Unlocker {
     private static class CommandBuilder {
         private List<String> list = new ArrayList<>();
 
-        void add(String command, String... args) {
-            this.list.add(String.format(command, (Object[]) args));
+        void add(String command) {
+            this.list.add(command);
         }
 
-        void sql(String sql, String... args) {
-            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db '%s;'", sql), args);
+        void add(String command, Object... args) {
+            this.add(String.format(command, args));
+        }
+
+        void sql(String sql) {
+            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db '%s;'", sql));
+        }
+
+        void sql(String sql, Object... args) {
+            this.sql(String.format(sql, args));
         }
 
         void disableGmsComponent(String name) {
@@ -91,5 +99,5 @@ class Unlocker {
         String[] toArray() {
             return this.toList().toArray(new String[0]);
         }
-   }
+    }
 }
