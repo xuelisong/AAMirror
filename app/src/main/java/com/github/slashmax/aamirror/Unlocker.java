@@ -21,18 +21,20 @@ class Unlocker {
 
         builder.print("Removing black and white lists...");
 
-        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
-        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
+        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
 
         builder.print("Adding to white list...");
         String unlockSql = String.format("INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, user, name, stringVal, committed) " +
-                        "SELECT DISTINCT '%s', version, 0, 0, '', 'app_white_list', '%s', 1 FROM Flags WHERE packageName LIKE '%s'",
-                CAR_ROOT_PACKAGE, OUR_PACKAGE, CAR_PACKAGES_PATTERN);
+                        "SELECT DISTINCT '%s1$', version, 0, 0, '', 'app_white_list', '%s2$', 1 FROM " +
+                        "(SELECT version FROM Packages WHERE packageName = '%1$s' " +
+                        "UNION SELECT version FROM ApplicationStates WHERE packageName = '%1$s') AS t",
+                CAR_ROOT_PACKAGE, OUR_PACKAGE);
 
         builder.sql(unlockSql);
 
         builder.print("Adding trigger...");
-        builder.sql("CREATE TRIGGER %s AFTER DELETE ON Flags BEGIN %s; END", TRIGGER_NAME, unlockSql);
+        builder.sql("CREATE TRIGGER %1$s AFTER DELETE ON Flags BEGIN %2$s; END", TRIGGER_NAME, unlockSql);
 
         builder.print("Restarting GMS and AAuto services...");
 
@@ -46,11 +48,11 @@ class Unlocker {
 
     static boolean isLocked() {
         CommandBuilder builder = new CommandBuilder();
-        builder.sql("SELECT COUNT(DISTINCT version) FROM Flags WHERE packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
-        builder.sql("SELECT result FROM (SELECT DISTINCT version, CASE WHEN name = 'app_white_list' THEN 1 ELSE 0 END AS result FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND stringVal LIKE '%%%s%%' AND packageName = '%s') AS t", OUR_PACKAGE, CAR_ROOT_PACKAGE);
+        builder.sql("SELECT COUNT(DISTINCT version) FROM (SELECT version FROM Packages WHERE packageName = '%1$s' UNION SELECT version FROM ApplicationStates WHERE packageName = '%1$s') AS t", CAR_ROOT_PACKAGE);
+        builder.sql("SELECT result FROM (SELECT DISTINCT version, CASE WHEN name = 'app_white_list' THEN 1 ELSE 0 END AS result FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND stringVal LIKE '%%%1$s%%' AND packageName = '%2$s') AS t", OUR_PACKAGE, CAR_ROOT_PACKAGE);
         builder.add("echo \"-\"");
-        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name = '%s'", TRIGGER_NAME);
-        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name != '%s'", TRIGGER_NAME);
+        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name = '%1$s'", TRIGGER_NAME);
+        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name != '%1$s'", TRIGGER_NAME);
 
         List<String> results = Shell.SU.run(builder.toList());
 
@@ -92,8 +94,8 @@ class Unlocker {
 
         builder = new CommandBuilder();
         for (String trigger : triggers) {
-            builder.print("Dropping trigger: %s", trigger);
-            builder.sql("DROP TRIGGER %s", trigger);
+            builder.print("Dropping trigger: %1$s", trigger);
+            builder.sql("DROP TRIGGER %1$s", trigger);
         }
 
         return Shell.run("su", builder.toArray(), null, true);
@@ -111,7 +113,7 @@ class Unlocker {
         }
 
         void sql(String sql) {
-            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db \"%s;\"", sql));
+            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db \"%1$s;\"", sql));
         }
 
         void sql(String sql, Object... args) {
@@ -119,7 +121,7 @@ class Unlocker {
         }
 
         void print(String str) {
-            this.add("echo \"%s\"", str);
+            this.add("echo \"%1$s\"", str);
         }
 
         void print(String format, Object... args) {
@@ -127,11 +129,11 @@ class Unlocker {
         }
 
         void disableGmsComponent(String name) {
-            this.add(String.format("pm disable --user 0 com.google.android.gms/.%s", name));
+            this.add(String.format("pm disable --user 0 com.google.android.gms/.%1$s", name));
         }
 
         void stopService(String name) {
-            this.add(String.format("am force-stop %s", name));
+            this.add(String.format("am force-stop %1$s", name));
         }
 
         List<String> toList() {
