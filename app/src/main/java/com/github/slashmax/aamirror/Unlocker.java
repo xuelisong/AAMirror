@@ -8,42 +8,37 @@ import eu.chainfire.libsuperuser.Shell;
 class Unlocker {
     private static final String OUR_PACKAGE = Unlocker.class.getPackage().getName();
     private static final String CAR_ROOT_PACKAGE = "com.google.android.gms.car";
-    //    private static final String CAR_PACKAGE = CAR_ROOT_PACKAGE + "#car";
     private static final String CAR_PACKAGES_PATTERN = CAR_ROOT_PACKAGE + "%";
     private static final String TRIGGER_NAME = "after_delete_mirror";
 
     static List<String> unlock() {
         CommandBuilder builder = new CommandBuilder();
-//        builder.disableGmsComponent("phenotype.service.sync.PhenotypeConfigurator");
-//        builder.disableGmsComponent("chimera.PersistentDirectBootAwareApiService");
 
-        List<String> result = dropAllTriggers();
-
-        builder.print("Removing black and white lists...");
-
-        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
-        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+        cleanUp(builder);
 
         builder.print("Adding to white list...");
         String unlockSql = String.format("INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, user, name, stringVal, committed) " +
-                        "SELECT DISTINCT '%s1$', version, 0, 0, '', 'app_white_list', '%s2$', 1 FROM " +
+                        "SELECT DISTINCT '%1$s', version, 0, 0, '', 'app_white_list', '%2$s', 1 FROM " +
                         "(SELECT version FROM Packages WHERE packageName = '%1$s' " +
                         "UNION SELECT version FROM ApplicationStates WHERE packageName = '%1$s') AS t",
                 CAR_ROOT_PACKAGE, OUR_PACKAGE);
-
         builder.sql(unlockSql);
 
         builder.print("Adding trigger...");
         builder.sql("CREATE TRIGGER %1$s AFTER DELETE ON Flags BEGIN %2$s; END", TRIGGER_NAME, unlockSql);
 
-        builder.print("Restarting GMS and AAuto services...");
+        restartServices(builder);
 
-        builder.stopService("com.google.android.gms");
-        builder.stopService("com.google.android.projection.gearhead");
+        return Shell.run("su", builder.toArray(), null, true);
+    }
 
-        result.addAll(Shell.run("su", builder.toArray(), null, true));
+    static List<String> relock() {
+        CommandBuilder builder = new CommandBuilder();
 
-        return result;
+        cleanUp(builder);
+        restartServices(builder);
+
+        return Shell.run("su", builder.toArray(), null, true);
     }
 
     static boolean isLocked() {
@@ -83,22 +78,33 @@ class Unlocker {
                 || !results.get(i + 2).equals("0");
     }
 
-    private static List<String> dropAllTriggers() {
+    private static void cleanUp(CommandBuilder builder) {
+        dropTriggers(builder, getTriggerList());
+
+        builder.print("Removing black and white lists...");
+
+        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+    }
+
+    private static List<String> getTriggerList() {
         CommandBuilder builder = new CommandBuilder();
         builder.sql("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags'");
-        List<String> triggers = Shell.SU.run(builder.toList());
+        return Shell.SU.run(builder.toList());
+    }
 
-        if (triggers.size() < 1) {
-            return triggers;
-        }
-
-        builder = new CommandBuilder();
+    private static void dropTriggers(CommandBuilder builder, List<String> triggers) {
         for (String trigger : triggers) {
             builder.print("Dropping trigger: %1$s", trigger);
             builder.sql("DROP TRIGGER %1$s", trigger);
         }
+    }
 
-        return Shell.run("su", builder.toArray(), null, true);
+    private static void restartServices(CommandBuilder builder) {
+        builder.print("Restarting GMS and AAuto services...");
+
+        builder.stopService("com.google.android.gms");
+        builder.stopService("com.google.android.projection.gearhead");
     }
 
     private static class CommandBuilder {

@@ -8,6 +8,10 @@
     <string name="pref_fav_settings">Favourite apps</string>
     <string name="already_unlocked">Already unlocked. No need to unlock.</string>
     <string name="no_root_detected">No root detected. In order to use AAMirror you need to root your device and add corresponding permissions to AAMirror.</string>
+    <string name="unlock">Unlock</string>
+    <string name="relock">Relock</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="locked">Locked</string>
 
     <string-array name="pref_orientation_list_titles">
         <item>None</item>

@@ -17,21 +17,18 @@ import java.util.List;
 public class SettingsActivity extends AppCompatPreferenceActivity {
     private static final String TAG = "SettingsActivity";
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = (preference, value) -> {
+        String stringValue = value.toString();
 
-            if (preference instanceof ListPreference) {
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+        if (preference instanceof ListPreference) {
+            ListPreference listPreference = (ListPreference) preference;
+            int index = listPreference.findIndexOfValue(stringValue);
+            preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
-            } else if (preference instanceof EditTextPreference) {
-                preference.setSummary(stringValue);
-            }
-            return true;
+        } else if (preference instanceof EditTextPreference) {
+            preference.setSummary(stringValue);
         }
+        return true;
     };
 
     public static class ScreenPreferenceFragment extends PreferenceFragment {
