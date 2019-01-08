@@ -22,6 +22,11 @@ import eu.chainfire.libsuperuser.Shell;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private Button unlockButton;
+    private Button relockButton;
+    private TextView lockedTextView;
+    private TextView unlockedTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -30,30 +35,19 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = this.findViewById(R.id.toolbar);
         this.setSupportActionBar(toolbar);
 
-        Button unlockButton = this.findViewById(R.id.unlockButton);
-        Button relockButton = this.findViewById(R.id.relockButton);
+        this.unlockButton = this.findViewById(R.id.unlockButton);
+        this.relockButton = this.findViewById(R.id.relockButton);
+        this.lockedTextView = MainActivity.this.findViewById(R.id.lockedTextView);
+        this.unlockedTextView = MainActivity.this.findViewById(R.id.unlockedTextView);
 
-        unlockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::unlock));
-        relockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::relock));
-
-        TextView operationLog = findViewById(R.id.operationLog);
-
-        if (!Shell.SU.available()) {
-            operationLog.setText(R.string.no_root_detected);
-            unlockButton.setEnabled(false);
-            relockButton.setEnabled(false);
-            this.findViewById(R.id.lockedTextView).setVisibility(View.GONE);
-            this.findViewById(R.id.unlockedTextView).setVisibility(View.GONE);
-            return;
-        }
+        this.unlockButton.setOnClickListener(view -> new LockerTask(this.unlockButton, this.relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::unlock));
+        this.relockButton.setOnClickListener(view -> new LockerTask(this.unlockButton, this.relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::relock));
 
         updateLockedStatus();
     }
 
     private void updateLockedStatus() {
-        boolean isLocked = Unlocker.isLocked();
-        this.findViewById(R.id.unlockedTextView).setVisibility(isLocked ? View.GONE : View.VISIBLE);
-        this.findViewById(R.id.lockedTextView).setVisibility(isLocked ? View.VISIBLE : View.GONE);
+        new IsLockedDetector().execute();
     }
 
     @Override
@@ -113,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<String> result) {
             try {
-                TextView operationLog = findViewById(R.id.operationLog);
-
                 StringBuilder sb = new StringBuilder();
 
                 for (String item : result) {
@@ -124,13 +116,36 @@ public class MainActivity extends AppCompatActivity {
 
                 sb.append(this.resources.getString(R.string.finished));
 
-                operationLog.setText(sb.toString());
+                ((TextView) findViewById(R.id.operationLog)).setText(sb.toString());
             } finally {
                 this.unlockButton.setEnabled(true);
                 this.relockButton.setEnabled(true);
 
                 updateLockedStatus();
             }
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class IsLockedDetector extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            if (!Shell.SU.available()) {
+                ((TextView) findViewById(R.id.operationLog)).setText(R.string.no_root_detected);
+                MainActivity.this.unlockButton.setEnabled(false);
+                MainActivity.this.relockButton.setEnabled(false);
+                lockedTextView.setVisibility(View.GONE);
+                unlockedTextView.setVisibility(View.GONE);
+                return true;
+            }
+
+            return Unlocker.isLocked();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean isLocked) {
+            unlockedTextView.setVisibility(isLocked ? View.GONE : View.VISIBLE);
+            lockedTextView.setVisibility(isLocked ? View.VISIBLE : View.GONE);
         }
     }
 
