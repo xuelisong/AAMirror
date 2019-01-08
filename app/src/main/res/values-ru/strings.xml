@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Зеркало Android Auto</string>
     <string name="settings">Настройки</string>
 
     <string name="unlock">Разблокировать</string>
