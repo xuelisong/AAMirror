@@ -2,6 +2,7 @@ package com.github.slashmax.aamirror;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -32,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
         Button unlockButton = this.findViewById(R.id.unlockButton);
         Button relockButton = this.findViewById(R.id.relockButton);
 
-        unlockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton).execute((IConsoleFunction) Unlocker::unlock));
-        relockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton).execute((IConsoleFunction) Unlocker::relock));
+        unlockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::unlock));
+        relockButton.setOnClickListener(view -> new LockerTask(unlockButton, relockButton, this.getResources()).execute((IConsoleFunction) Unlocker::relock));
 
         TextView operationLog = findViewById(R.id.operationLog);
 
@@ -84,12 +85,14 @@ public class MainActivity extends AppCompatActivity {
     private class LockerTask extends AsyncTask<IConsoleFunction, Void, List<String>> {
         private Button unlockButton;
         private Button relockButton;
+        private Resources resources;
 
-        public LockerTask(Button unlockButton, Button relockButton) {
+        LockerTask(Button unlockButton, Button relockButton, Resources resources) {
             super();
 
             this.unlockButton = unlockButton;
             this.relockButton = relockButton;
+            this.resources = resources;
         }
 
         @Override
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         protected List<String> doInBackground(IConsoleFunction... consoleFunctions) {
             List<String> result = new ArrayList<>();
             for (IConsoleFunction consoleFunction : consoleFunctions) {
-                result.addAll(consoleFunction.call());
+                result.addAll(consoleFunction.call(this.resources));
             }
             return result;
         }
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     sb.append("\n");
                 }
 
-                sb.append("FINISHED");
+                sb.append(this.resources.getString(R.string.finished));
 
                 operationLog.setText(sb.toString());
             } finally {
@@ -132,6 +135,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private interface IConsoleFunction {
-        List<String> call();
+        List<String> call(Resources resources);
     }
 }

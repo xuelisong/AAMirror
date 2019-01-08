@@ -4,13 +4,13 @@
     <SwitchPreference
         android:defaultValue="false"
         android:key="open_left_drawer_on_start"
-        android:title="Open on start" />
+        android:title="@string/open_on_start" />
     <SwitchPreference
         android:defaultValue="true"
         android:key="open_left_drawer_on_two_finger_tap"
-        android:title="Open on two finger tap" />
+        android:title="@string/open_on_two_fingers" />
     <SwitchPreference
         android:defaultValue="false"
         android:key="disable_drawer_swipe"
-        android:title="Disable side swipe" />
+        android:title="@string/disable_side_swipe" />
 </PreferenceScreen>

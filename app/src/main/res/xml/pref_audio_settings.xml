@@ -4,5 +4,5 @@
     <SwitchPreference
         android:defaultValue="false"
         android:key="request_audio_focus_on_connect"
-        android:title="Request audio focus on connect" />
+        android:title="@string/request_audio_focus" />
 </PreferenceScreen>

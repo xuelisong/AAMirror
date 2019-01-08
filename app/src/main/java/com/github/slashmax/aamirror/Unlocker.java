@@ -1,5 +1,7 @@
 package com.github.slashmax.aamirror;
 
+import android.content.res.Resources;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +13,12 @@ class Unlocker {
     private static final String CAR_PACKAGES_PATTERN = CAR_ROOT_PACKAGE + "%";
     private static final String TRIGGER_NAME = "after_delete_mirror";
 
-    static List<String> unlock() {
+    static List<String> unlock(Resources resources) {
         CommandBuilder builder = new CommandBuilder();
 
-        cleanUp(builder);
+        cleanUp(resources, builder);
 
-        builder.print("Adding to white list...");
+        builder.print(resources.getString(R.string.adding_to_white_list));
         String unlockSql = String.format("INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, user, name, stringVal, committed) " +
                         "SELECT DISTINCT '%1$s', version, 0, 0, '', 'app_white_list', '%2$s', 1 FROM " +
                         "(SELECT version FROM Packages WHERE packageName = '%1$s' " +
@@ -24,19 +26,19 @@ class Unlocker {
                 CAR_ROOT_PACKAGE, OUR_PACKAGE);
         builder.sql(unlockSql);
 
-        builder.print("Adding trigger...");
+        builder.print(resources.getString(R.string.adding_trigger));
         builder.sql("CREATE TRIGGER %1$s AFTER DELETE ON Flags BEGIN %2$s; END", TRIGGER_NAME, unlockSql);
 
-        restartServices(builder);
+        restartServices(resources, builder);
 
         return Shell.run("su", builder.toArray(), null, true);
     }
 
-    static List<String> relock() {
+    static List<String> relock(Resources resources) {
         CommandBuilder builder = new CommandBuilder();
 
-        cleanUp(builder);
-        restartServices(builder);
+        cleanUp(resources, builder);
+        restartServices(resources, builder);
 
         return Shell.run("su", builder.toArray(), null, true);
     }
@@ -78,10 +80,10 @@ class Unlocker {
                 || !results.get(i + 2).equals("0");
     }
 
-    private static void cleanUp(CommandBuilder builder) {
-        dropTriggers(builder, getTriggerList());
+    private static void cleanUp(Resources resources, CommandBuilder builder) {
+        dropTriggers(resources, builder, getTriggerList());
 
-        builder.print("Removing black and white lists...");
+        builder.print(resources.getString(R.string.removing_bw_lists));
 
         builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
         builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
@@ -93,15 +95,15 @@ class Unlocker {
         return Shell.SU.run(builder.toList());
     }
 
-    private static void dropTriggers(CommandBuilder builder, List<String> triggers) {
+    private static void dropTriggers(Resources resources, CommandBuilder builder, List<String> triggers) {
         for (String trigger : triggers) {
-            builder.print("Dropping trigger: %1$s", trigger);
+            builder.print(resources.getString(R.string.dropping_trigger), trigger);
             builder.sql("DROP TRIGGER %1$s", trigger);
         }
     }
 
-    private static void restartServices(CommandBuilder builder) {
-        builder.print("Restarting GMS and AAuto services...");
+    private static void restartServices(Resources resources, CommandBuilder builder) {
+        builder.print(resources.getString(R.string.restarting_services));
 
         builder.stopService("com.google.android.gms");
         builder.stopService("com.google.android.projection.gearhead");
@@ -132,10 +134,6 @@ class Unlocker {
 
         void print(String format, Object... args) {
             this.print(String.format(format, args));
-        }
-
-        void disableGmsComponent(String name) {
-            this.add(String.format("pm disable --user 0 com.google.android.gms/.%1$s", name));
         }
 
         void stopService(String name) {

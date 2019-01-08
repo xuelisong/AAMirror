@@ -1,0 +1,76 @@
+<resources>
+    <string name="app_name">Зеркало Android Auto</string>
+    <string name="settings">Настройки</string>
+
+    <string name="unlock">Разблокировать</string>
+    <string name="relock">Заблокировать</string>
+    <string name="unlocked">Разблокировано</string>
+    <string name="locked">Заблокировано</string>
+
+    <string name="pref_screen_settings">Настройки экрана</string>
+    <string name="pref_navigation_settings">Настройки боковой панели</string>
+    <string name="pref_audio_settings">Настройки аудио</string>
+    <string name="pref_fav_settings">Избранные приложения</string>
+
+    <string name="brightness">Яркость</string>
+    <string name="overwrite_brightness">Указать яркость экрана</string>
+    <string name="overwrite_brightness_value">Значение яркости экрана (0–255)</string>
+    <string name="rotation">Ориентация</string>
+    <string name="screen_rotation">Ориентация экрана</string>
+    <string name="rotation_degree">Градус поворота</string>
+    <string name="restore_rotation">Вернуть при потере фокуса</string>
+    <string name="screen_size">Размеры экрана (root)</string>
+    <string name="immersive_mode">Режим погружения</string>
+    <string name="adjust_ratio">Подогнать при фокусе</string>
+    <string name="restore_ratio">Вернуть при потере фокуса</string>
+    <string name="open_on_start">Открыть при старте</string>
+    <string name="open_on_two_fingers">Открывать по двум пальцам</string>
+    <string name="disable_side_swipe">Отключить боковой свайп</string>
+    <string name="request_audio_focus">Захват аудиофокуса</string>
+
+    <string name="adding_to_white_list">Добавление в белый список…</string>
+    <string name="adding_trigger">Добавление триггера…</string>
+    <string name="removing_bw_lists">Удаление чёрного и белого списков…</string>
+    <string name="dropping_trigger">Удаление триггера: %1$s</string>
+    <string name="restarting_services">Рестарт служб GMS и AAuto…</string>
+    <string name="finished">ЗАВЕРШЕНО</string>
+
+    <string name="no_root_detected">Не найден root. Для использования приложения необходимо рутовать ваше устройство и дать соответствующие разрешения приложению.</string>
+
+    <string-array name="pref_orientation_list_titles">
+        <item>Нет</item>
+        <item>Предлагать</item>
+        <item>Принудительно</item>
+    </string-array>
+    <string-array name="pref_orientation_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="pref_rotation_list_titles">
+        <item>0 градусов</item>
+        <item>90 градусов</item>
+        <item>180 градусов</item>
+        <item>270 градусов</item>
+    </string-array>
+    <string-array name="pref_rotation_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="pref_immersive_list_titles">
+        <item>Нет</item>
+        <item>Скрыть строку статуса</item>
+        <item>Скрыть навигацию</item>
+        <item>Полное погружение</item>
+    </string-array>
+    <string-array name="pref_immersive_list_values">
+        <item>null*</item>
+        <item>immersive.status=*</item>
+        <item>immersive.navigation=*</item>
+        <item>immersive.full=*</item>
+    </string-array>
+</resources>
