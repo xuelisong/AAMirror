@@ -1,5 +1,7 @@
 package com.github.slashmax.aamirror;
 
+import android.content.res.Resources;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,49 +10,46 @@ import eu.chainfire.libsuperuser.Shell;
 class Unlocker {
     private static final String OUR_PACKAGE = Unlocker.class.getPackage().getName();
     private static final String CAR_ROOT_PACKAGE = "com.google.android.gms.car";
-    //    private static final String CAR_PACKAGE = CAR_ROOT_PACKAGE + "#car";
     private static final String CAR_PACKAGES_PATTERN = CAR_ROOT_PACKAGE + "%";
     private static final String TRIGGER_NAME = "after_delete_mirror";
 
-    static List<String> unlock() {
+    static List<String> unlock(Resources resources) {
         CommandBuilder builder = new CommandBuilder();
-//        builder.disableGmsComponent("phenotype.service.sync.PhenotypeConfigurator");
-//        builder.disableGmsComponent("chimera.PersistentDirectBootAwareApiService");
 
-        List<String> result = dropAllTriggers();
+        cleanUp(resources, builder);
 
-        builder.print("Removing black and white lists...");
-
-        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
-        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
-
-        builder.print("Adding to white list...");
+        builder.print(resources.getString(R.string.adding_to_white_list));
         String unlockSql = String.format("INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, user, name, stringVal, committed) " +
-                        "SELECT DISTINCT '%s', version, 0, 0, '', 'app_white_list', '%s', 1 FROM Flags WHERE packageName LIKE '%s'",
-                CAR_ROOT_PACKAGE, OUR_PACKAGE, CAR_PACKAGES_PATTERN);
-
+                        "SELECT DISTINCT '%1$s', version, 0, 0, '', 'app_white_list', '%2$s', 1 FROM " +
+                        "(SELECT version FROM Packages WHERE packageName = '%1$s' " +
+                        "UNION SELECT version FROM ApplicationStates WHERE packageName = '%1$s') AS t",
+                CAR_ROOT_PACKAGE, OUR_PACKAGE);
         builder.sql(unlockSql);
 
-        builder.print("Adding trigger...");
-        builder.sql("CREATE TRIGGER %s AFTER DELETE ON Flags BEGIN %s; END", TRIGGER_NAME, unlockSql);
+        builder.print(resources.getString(R.string.adding_trigger));
+        builder.sql("CREATE TRIGGER %1$s AFTER DELETE ON Flags BEGIN %2$s; END", TRIGGER_NAME, unlockSql);
 
-        builder.print("Restarting GMS and AAuto services...");
+        restartServices(resources, builder);
 
-        builder.stopService("com.google.android.gms");
-        builder.stopService("com.google.android.projection.gearhead");
+        return Shell.run("su", builder.toArray(), null, true);
+    }
 
-        result.addAll(Shell.run("su", builder.toArray(), null, true));
+    static List<String> relock(Resources resources) {
+        CommandBuilder builder = new CommandBuilder();
 
-        return result;
+        cleanUp(resources, builder);
+        restartServices(resources, builder);
+
+        return Shell.run("su", builder.toArray(), null, true);
     }
 
     static boolean isLocked() {
         CommandBuilder builder = new CommandBuilder();
-        builder.sql("SELECT COUNT(DISTINCT version) FROM Flags WHERE packageName LIKE '%s'", CAR_PACKAGES_PATTERN);
-        builder.sql("SELECT result FROM (SELECT DISTINCT version, CASE WHEN name = 'app_white_list' THEN 1 ELSE 0 END AS result FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND stringVal LIKE '%%%s%%' AND packageName = '%s') AS t", OUR_PACKAGE, CAR_ROOT_PACKAGE);
+        builder.sql("SELECT COUNT(DISTINCT version) FROM (SELECT version FROM Packages WHERE packageName = '%1$s' UNION SELECT version FROM ApplicationStates WHERE packageName = '%1$s') AS t", CAR_ROOT_PACKAGE);
+        builder.sql("SELECT result FROM (SELECT DISTINCT version, CASE WHEN name = 'app_white_list' THEN 1 ELSE 0 END AS result FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND stringVal LIKE '%%%1$s%%' AND packageName = '%2$s') AS t", OUR_PACKAGE, CAR_ROOT_PACKAGE);
         builder.add("echo \"-\"");
-        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name = '%s'", TRIGGER_NAME);
-        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name != '%s'", TRIGGER_NAME);
+        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name = '%1$s'", TRIGGER_NAME);
+        builder.sql("SELECT COUNT() FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags' AND name != '%1$s'", TRIGGER_NAME);
 
         List<String> results = Shell.SU.run(builder.toList());
 
@@ -81,22 +80,33 @@ class Unlocker {
                 || !results.get(i + 2).equals("0");
     }
 
-    private static List<String> dropAllTriggers() {
+    private static void cleanUp(Resources resources, CommandBuilder builder) {
+        dropTriggers(resources, builder, getTriggerList());
+
+        builder.print(resources.getString(R.string.removing_bw_lists));
+
+        builder.sql("DELETE FROM Flags WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+        builder.sql("DELETE FROM FlagOverrides WHERE (name = 'app_black_list' OR name = 'app_white_list') AND packageName LIKE '%1$s'", CAR_PACKAGES_PATTERN);
+    }
+
+    private static List<String> getTriggerList() {
         CommandBuilder builder = new CommandBuilder();
         builder.sql("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'Flags'");
-        List<String> triggers = Shell.SU.run(builder.toList());
+        return Shell.SU.run(builder.toList());
+    }
 
-        if (triggers.size() < 1) {
-            return triggers;
-        }
-
-        builder = new CommandBuilder();
+    private static void dropTriggers(Resources resources, CommandBuilder builder, List<String> triggers) {
         for (String trigger : triggers) {
-            builder.print("Dropping trigger: %s", trigger);
-            builder.sql("DROP TRIGGER %s", trigger);
+            builder.print(resources.getString(R.string.dropping_trigger), trigger);
+            builder.sql("DROP TRIGGER %1$s", trigger);
         }
+    }
 
-        return Shell.run("su", builder.toArray(), null, true);
+    private static void restartServices(Resources resources, CommandBuilder builder) {
+        builder.print(resources.getString(R.string.restarting_services));
+
+        builder.stopService("com.google.android.gms");
+        builder.stopService("com.google.android.projection.gearhead");
     }
 
     private static class CommandBuilder {
@@ -111,7 +121,7 @@ class Unlocker {
         }
 
         void sql(String sql) {
-            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db \"%s;\"", sql));
+            this.add(String.format("sqlite3 /data/data/com.google.android.gms/databases/phenotype.db \"%1$s;\"", sql));
         }
 
         void sql(String sql, Object... args) {
@@ -119,19 +129,15 @@ class Unlocker {
         }
 
         void print(String str) {
-            this.add("echo \"%s\"", str);
+            this.add("echo \"%1$s\"", str);
         }
 
         void print(String format, Object... args) {
             this.print(String.format(format, args));
         }
 
-        void disableGmsComponent(String name) {
-            this.add(String.format("pm disable --user 0 com.google.android.gms/.%s", name));
-        }
-
         void stopService(String name) {
-            this.add(String.format("am force-stop %s", name));
+            this.add(String.format("am force-stop %1$s", name));
         }
 
         List<String> toList() {

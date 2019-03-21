@@ -1,12 +1,40 @@
 <resources>
-    <string name="app_name">Android Auto Mirror</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">AAuto Mirror</string>
+    <string name="settings">Settings</string>
+
+    <string name="unlock">Unlock</string>
+    <string name="relock">Relock</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="locked">Locked</string>
 
     <string name="pref_screen_settings">Screen settings</string>
     <string name="pref_navigation_settings">Sidebar settings</string>
     <string name="pref_audio_settings">Audio settings</string>
     <string name="pref_fav_settings">Favourite apps</string>
-    <string name="already_unlocked">Already unlocked. No need to unlock.</string>
+
+    <string name="brightness">Brightness</string>
+    <string name="overwrite_brightness">Overwrite screen brightness</string>
+    <string name="overwrite_brightness_value">Screen brightness value (0–255)</string>
+    <string name="rotation">Rotation</string>
+    <string name="screen_rotation">Screen rotation</string>
+    <string name="rotation_degree">Rotation degree</string>
+    <string name="restore_rotation">Restore rotation on focus lost</string>
+    <string name="screen_size">Screen size (root)</string>
+    <string name="immersive_mode">Immersive mode</string>
+    <string name="adjust_ratio">Adjust ratio on focus</string>
+    <string name="restore_ratio">Restore ratio on focus lost</string>
+    <string name="open_on_start">Open on start</string>
+    <string name="open_on_two_fingers">Open on two finger tap</string>
+    <string name="disable_side_swipe">Disable side swipe</string>
+    <string name="request_audio_focus">Request audio focus on connect</string>
+
+    <string name="adding_to_white_list">Adding to white list…</string>
+    <string name="adding_trigger">Adding trigger…</string>
+    <string name="removing_bw_lists">Removing black and white lists…</string>
+    <string name="dropping_trigger">Dropping trigger: %1$s</string>
+    <string name="restarting_services">Restarting GMS and AAuto services…</string>
+    <string name="finished">FINISHED</string>
+
     <string name="no_root_detected">No root detected. In order to use AAMirror you need to root your device and add corresponding permissions to AAMirror.</string>
 
     <string-array name="pref_orientation_list_titles">

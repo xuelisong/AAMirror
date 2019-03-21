@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Brightness">
+    <PreferenceCategory android:title="@string/brightness">
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="overwrite_brightness"
-            android:title="Overwrite screen brightness" />
+            android:title="@string/overwrite_brightness" />
         <EditTextPreference
             android:defaultValue="0"
             android:dependency="overwrite_brightness"
@@ -14,46 +14,46 @@
             android:key="overwrite_brightness_value"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:title="Screen brightness value (0-255)" />
+            android:title="@string/overwrite_brightness_value" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Rotation">
+    <PreferenceCategory android:title="@string/rotation">
 
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/pref_orientation_list_titles"
             android:entryValues="@array/pref_orientation_list_values"
             android:key="orientation_method"
-            android:title="Screen rotation" />
+            android:title="@string/screen_rotation" />
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/pref_rotation_list_titles"
             android:entryValues="@array/pref_rotation_list_values"
             android:key="orientation_rotation"
-            android:title="Rotation degree" />
+            android:title="@string/rotation_degree" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="reset_screen_rotation_on_stop"
-            android:title="Restore rotation on focus lost" />
+            android:title="@string/restore_rotation" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Screen size (root)">
+    <PreferenceCategory android:title="@string/screen_size">
 
         <ListPreference
             android:defaultValue="null*"
             android:entries="@array/pref_immersive_list_titles"
             android:entryValues="@array/pref_immersive_list_values"
             android:key="immersive_mode"
-            android:title="Immersive mode" />
+            android:title="@string/immersive_mode" />
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="set_screen_size_on_start"
-            android:title="Adjust ratio on focus" />
+            android:title="@string/adjust_ratio" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="reset_screen_size_on_stop"
-            android:title="Restore ratio on focus lost" />
+            android:title="@string/restore_ratio" />
     </PreferenceCategory>
 
 </PreferenceScreen>
